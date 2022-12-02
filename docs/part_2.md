@@ -1,0 +1,254 @@
+# Dockerise a Django project - Part 2
+
+Welcome to Part 2 of the series on how we set up and dockerise every new Django project at Webinative.
+
+In the previous part, we created a new Django project with a core app and custom User model. We implemented a custom UserAdmin. We also set up a Django superuser to login into the admin panel.
+
+In this article, we will add useful third-party Django apps, each providing unique benefits during development and deployment.
+
+1. Allow CIDR - Use local mobile devices for alpha-testing
+2. Debug toolbar - A handy in-browser debugger for developers
+3. Minify HTML - Client-side optimiser for production environment
+4. Flake8 - To enforce coding style
+5. Black - To format code consistently
+
+## Using mobile devices for alpha-testing
+
+Often times during development, we'll need to test the app on mobile devices. You can access your computer's development server from your phone/tablet, provided they are connected to the same network (WiFi or LAN) as your computer.
+
+To test this, let's figure out the IP address of your computer. In most cases, your internal IP starts with `192`. Get your computer's LAN IP address by running the below command in your terminal.
+
+```sh
+# if you are using a mac
+ifconfig | grep 192
+
+# if you are using ubuntu linux
+ip addr | grep 192
+
+# outputs something like
+#   inet 192.168.0.222 netmask 0xffffff00 broadcast 192.168.0.255
+
+# Here 192.168.0.222 is my computer's LAN IP address.
+```
+
+![local ip-address](images/part_2/01-local_ip_address.png)
+
+Next, we'll run the dev server on this IP instead of localhost (`127.0.0.1`).
+
+![runserver](images/part_2/02-runserver.png)
+
+Now, try accessing this dev server running at `http://192.168.0.222:8000/` from your phone/tablet's browser.
+
+You'll see an error message similar to the screenshot below,
+
+![disallowed host error](images/part_2/03-disallowed_host_error.jpg-)
+
+The error message also suggests a solution.
+
+> You may need to add '192.168.0.222' to your ALLOWED_HOSTS.
+
+In your code editor, open the `dockerise_django/settings.py` file and change the `ALLOWED_HOSTS` setting as shown below.
+
+```python
+ALLOWED_HOSTS = [
+  '192.168.0.222'
+]
+```
+
+Save the file and wait for the development server to restart.
+
+Then, refresh your mobile browser. You should now see the home page.
+
+![mobile connection succeeded](images/part_2/04-mobile_client_connected.jpg-)
+
+However, there is still a problem with this approach. You won't be the only person working on this project, and your computer won't be the only development environment. Hardcoding your local IP address into the project's settings might not work for other developers, and vice-versa.
+
+We will solve this problem in two steps.
+
+First, we'll run the dev server in `0.0.0.0:8000` instead of a fixed local IP.
+![runserver 0.0.0.0:8000](images/part_2/05-runserver_0_8000.png)
+
+Next, we'll configure our Django project to allow any local IP starting with `192.168.XXX.XXX`. Luckily, there is a tried-and-tested third-party Django app named **[django-allow-cidr](https://pypi.org/project/django-allow-cidr/)** to do this.
+
+### Install django-allow-cidr
+
+In your terminal, with your virtual environment activated, install the pip package.
+
+```sh
+pip install django-allow-cidr
+```
+
+Then, modify your `dockerise_django/settings.py` file as shown below.
+
+```python
+# step 1: add localhost to allowed-hosts
+ALLOWED_HOSTS = [
+  "localhost",
+]
+
+# step 2: define the CIDR range
+if DEBUG:
+  # enable CIDRs only in debug mode
+  ALLOWED_CIDR_NETS = ['192.168.0.0/24']
+
+# step 3: add the middleware
+MIDDLEWARE = [
+  'allow_cidr.middleware.AllowCIDRMiddleware',
+  # other middleware classes
+]
+```
+
+#### Note
+
+1. CIDR value should be specified considering your network. If your local IP starts with `192.168.1.XXX`, you will have to use `192.168.1.0/24`.
+1. If your team is spread across `192.168.2.XXX`, `192.168.3.XXX` and so on, then consider adding those subnets in the list.
+1. The newly added middleware should be the first in the list.
+
+Save the file and wait for the server to restart. Refresh your mobile browser and you should still see the home page.
+
+Source: [django-allow-cidr](https://pypi.org/project/django-allow-cidr/)
+
+## Debugging requests and responses
+
+As web application developers, our work revolves around requests and responses. Django Debug Toolbar is a handy set of panels displayed in-browser that provide various debug information about the current request/response. This includes the executed SQL queries, loaded template folders, rendered templates, served static files and so on.
+
+### Install django-debug-toolbar
+
+In your terminal, with your virtual environment activated, install the pip package.
+
+```sh
+pip install django-debug-toolbar
+```
+
+Check for prerequisites,
+
+1. Ensure static files app is installed and configured in our project.
+2. Ensure our project uses the `DjangoTemplates` backend, and has App directories enabled.
+
+Check the contents of `dockerise_django/settings.py` file,
+
+```python
+INSTALLED_APPS = [
+  # ...
+  'django.contrib.staticfiles',
+  # ...
+]
+
+STATIC_URL = '/static/'
+
+TEMPLATES = [
+  {
+    "BACKEND": "django.template.backends.django.DjangoTemplates",
+    "APP_DIRS": True,
+    # ...
+  }
+]
+```
+
+Once you have verified the prerequisistes, modify your project settings as described below,
+
+1. Install `debug_toolbar`
+1. Add the middleware
+1. Configure internal-IPs
+
+```python
+# step 1: install the app
+INSTALLED_APPS = [
+  # ...
+  "debug_toolbar",
+  # ...
+  "core"
+]
+
+# step 2: add the middleware
+MIDDLEWARE = [
+    # ...
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+
+# step 3: add the internal-ips setting
+if DEBUG:
+  ALLOWED_CIDR_NETS = ['192.168.0.0/24']
+  # set debug-toolbar to be visible only in localhost
+  INTERNAL_IPS = [
+      "127.0.0.1",
+  ]
+```
+
+It is good practice to include Django's built-in apps first, then third-party apps and finally the project-specific apps in the `INSTALLED_APPS` setting.
+
+The debug-toolbar middleware must come after any other middleware that encodes the response’s content, such as `GZipMiddleware`.
+
+Next, add the toolbar's URLs to our project's URL config file `dockerise_django/urls.py`.
+
+```python
+from django.urls import include, path
+
+urlpatterns = [
+    # ...
+    path("__debug__/", include('debug_toolbar.urls')),
+]
+```
+
+Now, if you refresh the browser, you might see Page not found (404). Implementing a view to handle the `/` route should fix this (which we will do later).
+
+Notice a debug-toolbar displayed to the right of the browser window. See screenshot below.
+
+![debug toolbar](images/part_2/06-debug_toolbar.png)
+
+However, this toolbar won't be visible on your mobile browsers because of the `INTERNAL_IPS` setting.
+
+Take time to explore each panel so that you know where to look for information when debugging.
+
+Source: [django-debug-toolbar](https://pypi.org/project/django-debug-toolbar/)
+
+## Minify HTML code
+
+> One of the important points on client side optimization is to minify HTML. With minified HTML code, you reduce the size of the data transferred from the server to the client, which results in faster load times.
+
+Unlike the previous two apps, minifying our HTML code is an optimisation for production environment. Installing and configuring this at the time of project setup saves us time later on.
+
+### Install django-htmlmin
+
+In your terminal, with your virtual environment activated, install the pip package.
+
+```sh
+pip install django-htmlmin
+```
+
+Modify the project settings,
+
+```python
+MIDDLEWARE = [
+  # ...
+  "htmlmin.middleware.HtmlMinifyMiddleware",
+  "htmlmin.middleware.MarkRequestMiddleware",
+  "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+```
+
+Note that if you're using Django's caching middleware, `MarkRequestMiddleware` should go after `FetchFromCacheMiddleware`, and `HtmlMinifyMiddleware` should go after `UpdateCacheMiddleware`.
+
+```python
+MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'htmlmin.middleware.HtmlMinifyMiddleware',
+    # ...
+    'django.middleware.cache.FetchFromCacheMiddleware',
+    'htmlmin.middleware.MarkRequestMiddleware',
+]
+```
+
+The default behaviour of the middleware is to remove all HTML comments. If you prefer keeping the comments, define an additional setting,
+
+```python
+KEEP_COMMENTS_ON_MINIFYING = True
+```
+
+Source: [django-htmlmin](https://pypi.org/project/django-htmlmin/)
+
+## Enforce coding style
+
+pyflakes - examines syntax tree
+pycodestyle - check python code against PEP8 code conventions
+mccabe - check complexity of python code

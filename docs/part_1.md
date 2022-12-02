@@ -202,4 +202,4 @@ In the change user page, next to the password field, you should see a link to th
 
 If everything works as intended, then congratulations. You have made it to the end of part 01.
 
-To summarise, we created a new Django project with a core app and customer User model. We implemented a customer UserAdmin. We verified these configurations work together as intended by logging into the Django admin panel.
+To summarise, we created a new Django project with a core app and custom User model. We implemented a custom UserAdmin. We verified these configurations work together as intended by logging into the Django admin panel.
