@@ -312,3 +312,7 @@ To enable _black_ in Visual Studio Code editor, press `Ctrl + ,` or `Cmd + ,` to
 Switch the to **Workspace** settings tab, then search for "python format". Locate the **Python > Formatting: Provider** setting and change it to _black_.
 
 ![python black](images/part_2/11-vscode_black.png)
+
+We'll see how black in action in the upcoming parts where we make more code changes.
+
+Wrapping up, in this article, we added three third-party django-apps, a linter, a code formatter and integrated them with Visual Studio Code.
