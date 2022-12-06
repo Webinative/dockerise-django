@@ -4,7 +4,7 @@ Welcome to Part 2 of the series on how we set up and dockerise every new Django 
 
 In the previous part, we created a new Django project with a core app and custom User model. We implemented a custom UserAdmin. We also set up a Django superuser to login into the admin panel.
 
-In this article, we will add useful third-party Django apps, each providing unique benefits during development and deployment.
+In this article, we will add useful third-party Django apps and python packages, each providing unique benefits during development and deployment.
 
 1. Allow CIDR - Use local mobile devices for alpha-testing
 2. Debug toolbar - A handy in-browser debugger for developers
@@ -41,7 +41,7 @@ Now, try accessing this dev server running at `http://192.168.0.222:8000/` from 
 
 You'll see an error message similar to the screenshot below,
 
-![disallowed host error](images/part_2/03-disallowed_host_error.jpg-)
+![disallowed host error](images/part_2/03-disallowed_host_error.jpg)
 
 The error message also suggests a solution.
 
@@ -59,7 +59,7 @@ Save the file and wait for the development server to restart.
 
 Then, refresh your mobile browser. You should now see the home page.
 
-![mobile connection succeeded](images/part_2/04-mobile_client_connected.jpg-)
+![mobile connection succeeded](images/part_2/04-mobile_client_connected.jpg)
 
 However, there is still a problem with this approach. You won't be the only person working on this project, and your computer won't be the only development environment. Hardcoding your local IP address into the project's settings might not work for other developers, and vice-versa.
 
@@ -249,6 +249,66 @@ Source: [django-htmlmin](https://pypi.org/project/django-htmlmin/)
 
 ## Enforce coding style
 
-pyflakes - examines syntax tree
-pycodestyle - check python code against PEP8 code conventions
-mccabe - check complexity of python code
+Every project must have preset coding conventions and developers must adhere to them. But, there is always a possibility for human error. That's why we use a linting tool like Flake8.
+
+Flake8 is a tool to check python code and enforce style guides. It is a wrapper around three different tools namely,
+
+1. `pyflakes` - to examine the syntax tree
+1. `pycodestyle` - to check python code against PEP8 code conventions
+1. `mccabe` - to check the complexity of python code
+
+To install flake8, use the command,
+
+```sh
+pip install flake8
+```
+
+To enable flake8 in Visual Studio Code editor, press `Ctrl + Shift + P` or `Cmd + Shift + P` to bring up the command prompt, then type `Python: Select Linter` and hit enter.
+
+![vscode command prompt](images/part_2/07-vscode_command_prompt.png)
+
+You should see a list of linters. Select `flake8`.
+
+![vscode linter flake8](images/part_2/08-vscode_select_linter.png)
+
+_**Note**_: Install the VS Code [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) if not done already.
+
+To see flake8 in action, open the `settings.py` file.
+
+Look at the errors section in the status bar at the bottom left corner of the window.
+
+![vscode status bar errors](images/part_2/09-vscode_status_bar_errors.png)
+
+Click on the errors section to bring up the "Problems" panel.
+
+![vscode flake8 errors](images/part_2/10-vscode_flake8_errors.png)
+
+The maximum line-length by default is 79 characters. Flake8 highlights all lines that have exceeded this limit. Let us configure Flake8 to respect Django's guideline of 119 characters.
+
+Create a new file named `setup.cfg` in the project root with the following content,
+
+```ini
+[flake8]
+exclude=.git,*migrations*
+max-line-length=119
+```
+
+We have also excluded the `git` and `migrations` folders from the flake8 check.
+
+Save the file. Close and reopen `settings.py`. You should now see no errors in the _Problems_ panel.
+
+## Formatting code
+
+_Flake8_ checks your code against the PEP8 styleguide and reports errors. The _Black_ formatter fixes them.
+
+To install black, use the command
+
+```sh
+pip install black
+```
+
+To enable _black_ in Visual Studio Code editor, press `Ctrl + ,` or `Cmd + ,` to bring up the settings page.
+
+Switch the to **Workspace** settings tab, then search for "python format". Locate the **Python > Formatting: Provider** setting and change it to _black_.
+
+![python black](images/part_2/11-vscode_black.png)

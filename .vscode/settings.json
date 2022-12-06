@@ -6,5 +6,7 @@
         "titleBar.activeBackground": "#6d9017",
         "titleBar.activeForeground": "#FBFBFE"
     },
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
 }
