@@ -2,9 +2,9 @@
 
 Welcome to Part 2 of the series on how we set up and dockerise every new Django project at Webinative.
 
-In the previous part, we created a new Django project with a core app and custom User model. We implemented a custom UserAdmin. We also set up a Django superuser to login into the admin panel.
+In part 1 of this series, we created a new Django project with a core app and custom User model. We implemented a custom UserAdmin. We also set up a Django superuser to login into the admin panel.
 
-In this article, we will add useful third-party Django apps and python packages, each providing unique benefits during development and deployment.
+This article will focus on a few useful third-party Django apps and python packages, each providing unique benefits during development and deployment.
 
 1. Allow CIDR - Use local mobile devices for alpha-testing
 2. Debug toolbar - A handy in-browser debugger for developers
@@ -14,7 +14,7 @@ In this article, we will add useful third-party Django apps and python packages,
 
 ## Using mobile devices for alpha-testing
 
-Often times during development, we'll need to test the app on mobile devices. You can access your computer's development server from your phone/tablet, provided they are connected to the same network (WiFi or LAN) as your computer.
+Often, during development, we'll need to test the app on mobile devices. You can access your computer's development server from your phone/tablet. However, your computer and mobile devices must be on the same network (WiFi or LAN).
 
 To test this, let's figure out the IP address of your computer. In most cases, your internal IP starts with `192`. Get your computer's LAN IP address by running the below command in your terminal.
 
@@ -37,7 +37,7 @@ Next, we'll run the dev server on this IP instead of localhost (`127.0.0.1`).
 
 ![runserver](images/part_2/02-runserver.png)
 
-Now, try accessing this dev server running at `http://192.168.0.222:8000/` from your phone/tablet's browser.
+Now try accessing this dev server at `http://192.168.0.222:8000/` from your phone/tablet's browser.
 
 You'll see an error message similar to the screenshot below,
 
@@ -66,9 +66,10 @@ However, there is still a problem with this approach. You won't be the only pers
 We will solve this problem in two steps.
 
 First, we'll run the dev server in `0.0.0.0:8000` instead of a fixed local IP.
+
 ![runserver 0.0.0.0:8000](images/part_2/05-runserver_0_8000.png)
 
-Next, we'll configure our Django project to allow any local IP starting with `192.168.XXX.XXX`. Luckily, there is a tried-and-tested third-party Django app named **[django-allow-cidr](https://pypi.org/project/django-allow-cidr/)** to do this.
+Next, we'll configure our Django project to allow any local IP starting with `192.168.XXX.XXX`. Luckily, we have a tried-and-tested third-party Django app named **[django-allow-cidr](https://pypi.org/project/django-allow-cidr/)** to do this.
 
 ### Install django-allow-cidr
 
@@ -98,11 +99,11 @@ MIDDLEWARE = [
 ]
 ```
 
-#### Note
+#### Notes
 
 1. CIDR value should be specified considering your network. If your local IP starts with `192.168.1.XXX`, you will have to use `192.168.1.0/24`.
-1. If your team is spread across `192.168.2.XXX`, `192.168.3.XXX` and so on, then consider adding those subnets in the list.
-1. The newly added middleware should be the first in the list.
+1. If your team is spread across `192.168.2.XXX`, `192.168.3.XXX` and so on, then consider adding those subnets to the list.
+1. The newly added middleware should be the first on the list.
 
 Save the file and wait for the server to restart. Refresh your mobile browser and you should still see the home page.
 
@@ -110,7 +111,7 @@ Source: [django-allow-cidr](https://pypi.org/project/django-allow-cidr/)
 
 ## Debugging requests and responses
 
-As web application developers, our work revolves around requests and responses. Django Debug Toolbar is a handy set of panels displayed in-browser that provide various debug information about the current request/response. This includes the executed SQL queries, loaded template folders, rendered templates, served static files and so on.
+As web application developers, our work revolves around requests and responses. Django Debug Toolbar is a handy set of panels displayed in-browser that provide various debug information about the current request/response. The toolbar includes information about the executed SQL queries, loaded template folders, rendered templates, served static files and so on.
 
 ### Install django-debug-toolbar
 
@@ -122,10 +123,10 @@ pip install django-debug-toolbar
 
 Check for prerequisites,
 
-1. Ensure static files app is installed and configured in our project.
-2. Ensure our project uses the `DjangoTemplates` backend, and has App directories enabled.
+1. Ensure the static files app is installed and configured in our project.
+2. Ensure our project uses the `DjangoTemplates` backend and has app directories enabled.
 
-Check the contents of `dockerise_django/settings.py` file,
+Check the contents of the `dockerise_django/settings.py` file,
 
 ```python
 INSTALLED_APPS = [
@@ -145,7 +146,7 @@ TEMPLATES = [
 ]
 ```
 
-Once you have verified the prerequisistes, modify your project settings as described below,
+Once you have verified the prerequisites, modify your project settings as described below,
 
 1. Install `debug_toolbar`
 1. Add the middleware
@@ -175,9 +176,9 @@ if DEBUG:
   ]
 ```
 
-It is good practice to include Django's built-in apps first, then third-party apps and finally the project-specific apps in the `INSTALLED_APPS` setting.
+It is good practice to include Django's built-in apps first, then third-party apps and the project-specific apps in the `INSTALLED_APPS` setting.
 
-The debug-toolbar middleware must come after any other middleware that encodes the response’s content, such as `GZipMiddleware`.
+The debug-toolbar middleware must come after any other middleware that encodes the response content, such as `GZipMiddleware`.
 
 Next, add the toolbar's URLs to our project's URL config file `dockerise_django/urls.py`.
 
@@ -192,25 +193,25 @@ urlpatterns = [
 
 Now, if you refresh the browser, you might see Page not found (404). Implementing a view to handle the `/` route should fix this (which we will do later).
 
-Notice a debug-toolbar displayed to the right of the browser window. See screenshot below.
+Notice a debug toolbar displayed to the right of the browser window. See the screenshot below.
 
 ![debug toolbar](images/part_2/06-debug_toolbar.png)
 
 However, this toolbar won't be visible on your mobile browsers because of the `INTERNAL_IPS` setting.
 
-Take time to explore each panel so that you know where to look for information when debugging.
+Explore each panel and familiarise to know where to look for information when debugging.
 
 Source: [django-debug-toolbar](https://pypi.org/project/django-debug-toolbar/)
 
 ## Minify HTML code
 
-> One of the important points on client side optimization is to minify HTML. With minified HTML code, you reduce the size of the data transferred from the server to the client, which results in faster load times.
+> One of the important points on client side optimisation is to minify HTML. With minified HTML code, you reduce the size of the data transferred from the server to the client, which results in faster load times.
 
 Unlike the previous two apps, minifying our HTML code is an optimisation for production environment. Installing and configuring this at the time of project setup saves us time later on.
 
 ### Install django-htmlmin
 
-In your terminal, with your virtual environment activated, install the pip package.
+In your terminal, run the following command with your virtual environment activated.
 
 ```sh
 pip install django-htmlmin
@@ -249,9 +250,9 @@ Source: [django-htmlmin](https://pypi.org/project/django-htmlmin/)
 
 ## Enforce coding style
 
-Every project must have preset coding conventions and developers must adhere to them. But, there is always a possibility for human error. That's why we use a linting tool like Flake8.
+Every project must have preset coding conventions, and developers must adhere to them. But, there is always a possibility for human error. That's why we use a linting tool like Flake8.
 
-Flake8 is a tool to check python code and enforce style guides. It is a wrapper around three different tools namely,
+Flake8 is a tool to check python code and enforce style guides. It is a wrapper around three different tools, namely
 
 1. `pyflakes` - to examine the syntax tree
 1. `pycodestyle` - to check python code against PEP8 code conventions
@@ -263,7 +264,7 @@ To install flake8, use the command,
 pip install flake8
 ```
 
-To enable flake8 in Visual Studio Code editor, press `Ctrl + Shift + P` or `Cmd + Shift + P` to bring up the command prompt, then type `Python: Select Linter` and hit enter.
+To enable flake8 in the Visual Studio Code editor, press `Ctrl + Shift + P` or `Cmd + Shift + P` to bring up the command prompt, then type `Python: Select Linter` and hit enter.
 
 ![vscode command prompt](images/part_2/07-vscode_command_prompt.png)
 
@@ -299,7 +300,7 @@ Save the file. Close and reopen `settings.py`. You should now see no errors in t
 
 ## Formatting code
 
-_Flake8_ checks your code against the PEP8 styleguide and reports errors. The _Black_ formatter fixes them.
+_Flake8_ checks your code against the PEP8 style guide and reports errors. The _Black_ formatter fixes them.
 
 To install black, use the command
 
@@ -309,10 +310,10 @@ pip install black
 
 To enable _black_ in Visual Studio Code editor, press `Ctrl + ,` or `Cmd + ,` to bring up the settings page.
 
-Switch the to **Workspace** settings tab, then search for "python format". Locate the **Python > Formatting: Provider** setting and change it to _black_.
+Switch to the **Workspace** settings tab, then search for "python format". Locate the **Python > Formatting: Provider** setting and change it to _black_.
 
 ![python black](images/part_2/11-vscode_black.png)
 
-We'll see how black in action in the upcoming parts where we make more code changes.
+We'll see how the black formatter works as we make more code changes in the upcoming parts.
 
-Wrapping up, in this article, we added three third-party django-apps, a linter, a code formatter and integrated them with Visual Studio Code.
+So, summarising, we added three third-party Django apps, a linter, and a code formatter and integrated them with Visual Studio Code.
