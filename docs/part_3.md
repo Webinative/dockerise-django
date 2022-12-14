@@ -30,7 +30,9 @@ The old-school approach is to have multiple `settings.py` files &mdash; one for 
 
 ## Abstract ENV variables
 
-Create a `.env` file within your project root (same level as `manage.py`). Note that hidden files & folders' name starts with a dot in Linux and Mac.
+Create a `.env` file within your project root (same level as `manage.py`).
+
+> **Note**: Files and folders starting with a dot in their name remain hidden in Linux and Mac.
 
 We'll identify the config that could change with environments and move them into this file.
 
@@ -45,7 +47,7 @@ DJANGO_TIME_ZONE=UTC
 DJANGO_SECRET_KEY="django-insecure-q-*lrcfa-ll41wh@9=l+f=96%!9%vpm8h)jdw)gpw7)i41c94k"
 ```
 
-Note that all keys have the prefix `DJANGO_` acting as a namespace.
+> **Note**: The prefix `DJANGO_` acts as a namespace for these ENV vars.
 
 Next, we'll update `settings.py` to read these values from the environment.
 
