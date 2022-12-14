@@ -10,14 +10,14 @@ This article will focus on abstracting some key configurations into environment 
 
 ## Why use environment variables
 
-A Django project could be run in one or more of the following environments,
+In a typical organisation, we run a Django project in one or more of the following environments,
 
 - Alpha   (Development)
 - Beta    (Quality assurance)
 - Staging (Pre-Production)
 - Live    (Production)
 
-Some of the project's configurations/settings change depending on the runtime environment. For example, consider the `ALLOWED_HOSTS` and `DEBUG` settings.
+Some of the project's configurations/settings change depending on the runtime environment. For example, consider the `ALLOWED_HOSTS` and `DEBUG` values.
 
 | Setting | Alpha | Beta | Staging | Live |
 | --- | --- | --- | --- | --- |
@@ -26,13 +26,13 @@ Some of the project's configurations/settings change depending on the runtime en
 
 Moreover, it is good practice to have a unique `SECRET_KEY` for every environment.
 
-The old-school approach is to have multiple `settings.py` files one for each environment like `settings_alpha.py`, `settings_beta.py`, etc. But saving your secrets in Git or any VCS is not recommended (see [12-factor principles](https://12factor.net/)). A better approach is to use environment variables.
+The old-school approach is to have multiple `settings.py` files &mdash; one for each environment like `settings_alpha.py`, `settings_beta.py`, etc. But saving your secrets in Git or any VCS is not recommended (see [12-factor principles](https://12factor.net/)). A better approach is to use environment variables.
 
 ## Abstract ENV variables
 
-Create a `.env` file within your project root (same level as `manage.py`). Note that any file or folder that starts with a dot is hidden in Linux and Mac.
+Create a `.env` file within your project root (same level as `manage.py`). Note that hidden files & folders' name starts with a dot in Linux and Mac.
 
-We'll identify the config that could change with environment and move them into this file.
+We'll identify the config that could change with environments and move them into this file.
 
 ```ini
 # contents of .env
@@ -45,7 +45,7 @@ DJANGO_TIME_ZONE=UTC
 DJANGO_SECRET_KEY="django-insecure-q-*lrcfa-ll41wh@9=l+f=96%!9%vpm8h)jdw)gpw7)i41c94k"
 ```
 
-Note that all keys have a prefix `DJANGO_` acting as a namespace.
+Note that all keys have the prefix `DJANGO_` acting as a namespace.
 
 Next, we'll update `settings.py` to read these values from the environment.
 
@@ -75,7 +75,7 @@ if DEBUG:
 TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'UTC')
 ```
 
-Adding `.env` file in our project's `.gitignore` ensures Git doesn't track this file.
+**Tip:** Adding the `.env` file to our project's `.gitignore` ensures Git doesn't track this file.
 
 Now, try running the development server.
 
@@ -91,11 +91,11 @@ You should see an error as shown below,
 
 ![runserver without env vars](images/part_3/01-runserver_without_env.png)
 
-The reason is we have abstracted some settings into a `.env` file but we have not loaded those values into our virtual environment.
+Why? We have abstracted some settings into a `.env` file but not loaded them into our virtual environment.
 
 ### Load ENV variables
 
-Let us load the contents of `.env` file into our virtual environment, and then run the development server.
+Let us load the contents of the `.env` file into our virtual environment and then run the development server.
 
 ```sh
 # load contents of .env file
@@ -131,6 +131,6 @@ echo $DJANGO_ALLOWED_HOSTS
 # should run the dev server without any errors
 ```
 
-Going forward, as you add more apps and configurations in your project, remember to identify and abstract configuration that might vary with environments into the `.env` file.
+As you move forward and add more apps to your project, remember to identify and abstract environment-specific configuration into the `.env` file.
 
 In the next part, we will start containerising the application.
