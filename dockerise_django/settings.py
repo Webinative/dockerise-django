@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,18 +21,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-q-*lrcfa-ll41wh@9=l+f=96%!9%vpm8h)jdw)gpw7)i41c94k"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = [
-    "localhost",
-]
+ALLOWED_HOSTS = []
+ALLOWED_HOSTS_ENV = os.getenv("DJANGO_ALLOWED_HOSTS")
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(",")
 
 if DEBUG:
-    ALLOWED_CIDR_NETS = ["192.168.0.0/24"]
-    INTERNAL_IPS = ["127.0.0.1"]
+    ALLOWED_CIDR_NETS_ENV = os.getenv("DJANGO_ALLOWED_CIDR_NETS")
+    if ALLOWED_CIDR_NETS_ENV:
+        ALLOWED_CIDR_NETS = ALLOWED_CIDR_NETS_ENV.split(",")
+
+    INTERNAL_IPS_ENV = os.getenv("DJANGO_INTERNAL_IPS")
+    if INTERNAL_IPS_ENV:
+        INTERNAL_IPS = INTERNAL_IPS_ENV.split(",")
 
 # Application definition
 
@@ -119,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "UTC")
 
 USE_I18N = True
 
