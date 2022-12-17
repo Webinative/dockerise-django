@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  dockerise-django:
+    build: .
+    user: webinative
+    command: python -u manage.py runserver 0:8000
+    container_name: dockerise-django
+    env_file:
+      - ./dockerise-django.env
+      - ./.env
+    volumes:
+      - .:/home/webinative/code
+      - dockerise-django-vscode:/home/webinative/.vscode-server
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+volumes:
+  dockerise-django-vscode:

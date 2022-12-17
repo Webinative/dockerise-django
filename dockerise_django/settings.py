@@ -36,9 +36,13 @@ if DEBUG:
     if ALLOWED_CIDR_NETS_ENV:
         ALLOWED_CIDR_NETS = ALLOWED_CIDR_NETS_ENV.split(",")
 
-    INTERNAL_IPS_ENV = os.getenv("DJANGO_INTERNAL_IPS")
-    if INTERNAL_IPS_ENV:
-        INTERNAL_IPS = INTERNAL_IPS_ENV.split(",")
+    import socket
+
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + [
+        "127.0.0.1",
+        "10.0.2.2",
+    ]
 
 # Application definition
 
