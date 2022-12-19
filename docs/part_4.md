@@ -435,9 +435,118 @@ docker-compose start
 docker-compose down
 ```
 
-To summarise, in this post, we have successfully created
+## Remove the virtual environment
 
-1. a docker-image from our `Dockerfile`.
-1. a docker container from our docker-image and the runtime config file `docker-compose.yaml`.
+Our django project is now containerised. We won't require the python virtual environment we created in the first part of this series anymore.
+
+You can safely remove it using the following commands,
+
+```sh
+deactivate
+
+rmvirtualenv dockerise_django
+```
+
+## Implement a simple page
+
+To get rid of the 404 error page, we'll add a new view, template and a URL config.
+
+```html
+<!-- contents of core/templates/core/home.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Dockerised Django App</title>
+</head>
+<body>
+    <h1>Dockerised Django App</h1>
+    <p>Author: Magesh Ravi</p>
+    <p>Organisation: Webinative Technologies</p>
+</body>
+</html>
+```
+
+```python
+# contents of core/views.py
+
+from django.shortcuts import render
+
+
+def home(request):
+    return render(request, "core/home.html")
+```
+
+```python
+# contents of core/urls.py
+
+from django.urls import path
+
+from .views import home
+
+app_name = "core"
+urlpatterns = [path("", home, name="home")]
+```
+
+```python
+# update dockerise_django/urls.py
+
+urlpatterns = [
+    path("", include("core.urls", namespace="core")),   # add this line
+    path("admin/", admin.site.urls),
+    path("__debug__/", include("debug_toolbar.urls")),
+]
+```
+
+Visit `http://localhost:8000/` in your browser and you should see the page shown below.
+
+![home page](images/part_4/06-home_page.png)
+
+## Attaching VS Code to the container
+
+You might notice that VS Code's Intellisense (code-completion) has stopped working with python files (`views.py` and `urls.py`). The reason is we have moved the project's python runtime from the virtual environment to the container and our code-editor is not aware of this.
+
+We must connect VS Code to the python binaries inside the container for the code-completion to work again.
+
+**[Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)** &mdash; a VS Code extension that does exactly this. Install it from the extensions view.
+
+![vscode extension](images/part_4/07-vscode_extension.png)
+
+Once installed, connect VS Code to your container by pressing `Ctrl + Shift + P` and search for "Dev Containers: Attach to Running Container..." and hit Enter.
+
+![prompt attach to container](images/part_4/08-prompt_attach_to_container.png)
+
+You should then see a list of running containers to choose from. Choose `dockerise-django`.
+
+![prompt attach to container](images/part_4/09-prompt_list_containers.png)
+
+You should see a new VS Code window open up.
+
+![container window](images/part_4/10-container_window.png)
+
+Go to _**File**_ > _**Open Folder**_, browse `/home/webinative/code/` and click on OK.
+
+![open code folder](images/part_4/11-open_code_folder.png)
+
+You should see the complete folder contents in your sidebar.
+
+![code sidebar](images/part_4/12-code_sidebar.png)
+
+Next, install the Python extension inside the container.
+
+![python extension inside container](images/part_4/13-python_container_extension.png)
+
+Once the python extension is installed, you can open any python file and see that code-completions work as expected.
+
+## Finishing up
+
+To summarise, in this post, we have successfully
+
+1. created a docker-image from our `Dockerfile`.
+1. created a docker container from our docker-image and the runtime config file `docker-compose.yaml`.
+1. connected Visual Studio Code to the Python runtime within our docker container.
 
 All changes described in this post have been committed the github branch `part_04/containerise` of [this repository](https://github.com/Webinative/dockerise-django).
