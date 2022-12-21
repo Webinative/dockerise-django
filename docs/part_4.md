@@ -547,13 +547,4 @@ To summarise, in this post, we have successfully
 
 All changes described in this post have been committed to the GitHub branch `part_04/containerise` of [this repository](https://github.com/Webinative/dockerise-django).
 
-Like this article? Have a comment to share or a question to raise? Join our [Discord channel](https://discord.gg/THrPnBAZ).
-
-Todo:
-
-- upload images
-- edit image source in post
-- add meta content
-- add og images
-- publish
-- update part 1, 2 and 3 with discord invite.
+Like this article? Have a comment to share or a question to raise? Join our [Discord channel](https://discord.gg/DfwgnNHd4k).
