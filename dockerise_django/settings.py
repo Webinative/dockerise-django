@@ -155,3 +155,17 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email settings
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "webmaster@localhost")
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
+EMAIL_PORT = os.getenv("DJANGO_EMAIL_PORT")
+EMAIL_USE_TLS = os.getenv("DJANGO_EMAIL_USE_TLS")
+
+# Error reporting through email
+ADMINS = [
+    ("Webservices", "webservices@webinative.com"),
+]
+SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "root@localhost")

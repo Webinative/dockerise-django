@@ -31,6 +31,16 @@ services:
     depends_on:
       - dockerise-postgres
 
+  dockerise-mailhog:
+    image: mailhog/mailhog
+    container_name: dockerise-mailhog
+    logging:
+      driver: 'none' # disable saving logs
+    ports:
+      - 8025:8025 # web ui
+    expose:
+      - 1025
+
 volumes:
   dockerise-django-vscode:
   dockerise-postgres-data:
